@@ -22,21 +22,16 @@
 // Execute `rustlings hint errors5` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
-
 use std::error;
 use std::fmt;
 use std::num::ParseIntError;
 
-// TODO: update the return type of `main()` to make this compile.
-fn main() -> Result<(), Box<dyn ???>> {
+fn main() -> Result<(), Box<dyn error::Error>> {
     let pretend_user_input = "42";
     let x: i64 = pretend_user_input.parse()?;
     println!("output={:?}", PositiveNonzeroInteger::new(x)?);
     Ok(())
 }
-
-// Don't change anything below this line.
 
 #[derive(PartialEq, Debug)]
 struct PositiveNonzeroInteger(u64);
@@ -45,6 +40,13 @@ struct PositiveNonzeroInteger(u64);
 enum CreationError {
     Negative,
     Zero,
+    ParseError(ParseIntError),
+}
+
+impl From<ParseIntError> for CreationError {
+    fn from(err: ParseIntError) -> CreationError {
+        CreationError::ParseError(err)
+    }
 }
 
 impl PositiveNonzeroInteger {
@@ -57,14 +59,13 @@ impl PositiveNonzeroInteger {
     }
 }
 
-// This is required so that `CreationError` can implement `error::Error`.
 impl fmt::Display for CreationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let description = match *self {
-            CreationError::Negative => "number is negative",
-            CreationError::Zero => "number is zero",
-        };
-        f.write_str(description)
+        match self {
+            CreationError::Negative => f.write_str("number is negative"),
+            CreationError::Zero => f.write_str("number is zero"),
+            CreationError::ParseError(err) => f.write_str(&err.to_string()),
+        }
     }
 }
 
